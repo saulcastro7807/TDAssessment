@@ -5,6 +5,7 @@ To run Teradata Assessment exercise:
   * ./runme.sh
   
 The script will execute all 3 assignments automatically
+(script also try to install required software, may ask for sudo password)
 
 # Considerations
   * Tested on a virtual machine under VirtualBox running Ubuntu 22.04
