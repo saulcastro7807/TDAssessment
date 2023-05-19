@@ -4,7 +4,8 @@ To run Teradata Assessment exercise:
   * cd assessment/assignments
   * ./runme.sh
 The script will execute all 3 assignments automatically
-#Considerations
+
+# Considerations
   * Tested on a virtual machine under VirtualBox running Ubuntu 22.04
   * Had no time to implement Input Validation
   * Not implemented deployment to Kubernetes Cluster (time and cost constraints)
