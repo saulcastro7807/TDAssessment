@@ -1,0 +1,28 @@
+---
+- name: Teradata Assessment Assignment 2
+  hosts: all
+
+  tasks:
+
+  - name: include variables
+    include_vars:
+      file: variables.yml
+
+  - name: Create Disk mount point
+    file: name=/teradata state=directory owner=root mode=0755
+
+  - name: format FS to ext4
+    shell:
+      cmd: "mkfs.ext4 /dev/sdg"
+
+  - name: configure mount points
+    mount:
+      name: /teradata
+      src: /dev/sdg
+      fstype: ext4
+      opts: "defaults,nofail"
+      state: present
+
+  - name: mount filesystem
+    shell:
+      cmd: "mount -a"

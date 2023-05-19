@@ -1,0 +1,40 @@
+---
+- name: Teradata Assessment Assignment 2
+  hosts: localhost
+
+  tasks:
+
+  - name: include variables
+    include_vars:
+      file: variables.yml
+
+  - name: get instance id
+    include_vars:
+      file: .instancevar.yml
+
+  - name: EC2 SSH Access Key
+    ec2_key:
+      name: "ec2key"
+      region: "{{ var_aws_region }}"
+      aws_access_key: "{{ var_aws_access_key }}"
+      aws_secret_key: "{{ var_aws_secret_key }}"
+    register: SSHKey
+
+  - name: Create SSH key File
+    copy: 
+      content: "{{ SSHKey.key.private_key }}"  
+      dest: "./.key.pem"  
+      mode: 0400
+    when: SSHKey.changed
+
+  - name: Create and attach new volume
+    ec2_vol:
+      aws_access_key: "{{ var_aws_access_key }}"
+      aws_secret_key: "{{ var_aws_secret_key }}"
+      delete_on_termination: true
+      region: "{{ var_aws_region }}"
+      state: present
+      volume_size: 1
+      instance: "{{ teradata_instance_id }}"
+      device_name: "/dev/sdg"
+    register: ec2_vol1

@@ -1,0 +1,25 @@
+---
+- name: Teradata Assessment Assignment, prereequisite check
+  hosts: localhost
+
+  tasks:
+
+  - name: install required packages
+    apt:
+      pkg:
+      - python3-pip
+      - apt-transport-https
+      - curl
+      - gnupg-agent
+      - ca-certificates
+      - software-properties-common
+      state: present
+      update_cache: yes
+    become: true
+
+  - name: Install required pip packages
+    pip:
+      name:
+      - boto
+      - boto3
+    become: false

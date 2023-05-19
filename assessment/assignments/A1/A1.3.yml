@@ -1,0 +1,47 @@
+---
+- name: Teradata Assessment Assignment 3
+  hosts: all
+
+  tasks:
+
+  - name: include variables
+    include_vars:
+      file: variables.yml
+
+  - name: create ssl certificates
+    shell:
+      cmd: openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/certs/ssl-cert-snakeoil.key -out /etc/ssl/certs/ssl-cert-snakeoil.crt -subj "/C=MX/ST=CDMX/L=CDMX/O=Example Inc. /OU=IT/CN=example.com"
+
+  - name: convert crt to pem format
+    shell:
+      chdir: /etc/ssl/certs
+      cmd: openssl x509 -in ssl-cert-snakeoil.crt -out ssl-cert-snakeoil.pem 
+
+  - name: Move key file to private dir
+    shell:
+      cmd: mv /etc/ssl/certs/ssl-cert-snakeoil.key /etc/ssl/private
+
+  - name: install Apache SSL module
+    command: >
+      a2enmod ssl
+      creates=/etc/apache2/mods-enabled/ssl.load
+
+  - name: enable Apache ssl module
+    command: >
+      ln -s /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-enabled/default-ssl.conf
+
+  - name: enable rewrite engine
+    command: >
+      a2enmod rewrite
+      creates=/etc/apache2/mods-enabled/rewrite.load
+
+  - name: Create redirect configuration file
+    copy: >
+      src=./assets/http-redirect-https.conf
+      dest=/etc/apache2/sites-enabled/http-redirect-https.conf
+
+  - name: Restart HTTPD service
+    service:
+      name: apache2
+      state: restarted
+      enabled: true

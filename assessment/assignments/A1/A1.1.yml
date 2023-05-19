@@ -1,0 +1,102 @@
+---
+- name: Teradata Assessment Assignment 1
+  hosts: localhost
+
+  tasks:
+
+  - name: include variables
+    include_vars:
+        file: variables.yml
+
+  - name: EC2 SSH Access Key
+    ec2_key:
+      name: "ec2key"
+      region: "{{ var_aws_region }}"
+      aws_access_key: "{{ var_aws_access_key }}"
+      aws_secret_key: "{{ var_aws_secret_key }}"
+    register: SSHKey
+
+  - name: Create SSH key File
+    copy: 
+      content: "{{ SSHKey.key.private_key }}"  
+      dest: "./.key.pem"  
+      mode: 0400
+    when: SSHKey.changed
+
+  - name: Deploy subnet for EC2 instance
+    amazon.aws.ec2_vpc_subnet:
+      access_key: "{{ var_aws_access_key }}"
+      secret_key: "{{ var_aws_secret_key }}"
+      state: present
+      vpc_id: "{{ var_vpc_id }}"
+      cidr: "{{ var_subnet_cidr }}"
+      region: "{{ var_aws_region }}"
+      wait: yes
+      tags:
+        Name: TeradataAssessmentSubnet
+    register: ansible_subnet
+
+  - name: Create Security Group
+    amazon.aws.ec2_security_group:
+      name: "TeradataAssessmentsg1"
+      access_key: "{{ var_aws_access_key }}"
+      secret_key: "{{ var_aws_secret_key }}"
+      vpc_id: "{{ var_vpc_id }}"
+      region: "{{ var_aws_region }}"
+      state: present
+      description: "Security Group for Teradata Assessment"
+      rules:
+        - proto: tcp
+          ports:
+          - "443"
+          cidr_ip: 0.0.0.0/0
+        - proto: tcp
+          ports:
+          - "80"
+          cidr_ip: 0.0.0.0/0
+        - proto: tcp
+          ports:
+          - "22"
+          cidr_ip: 0.0.0.0/0
+    register: ansible_sg1
+
+
+  - name: Deploy EC2 instance
+    ec2_instance:
+      name: "TeradataAssessmentInstance"
+      key_name: "ec2key"
+      image:
+        id: "{{ var_ec2_ami }}"
+      instance_type: "{{ var_ec2_size }}"
+        #count: "1"
+      wait: yes
+      vpc_subnet_id: "{{ ansible_subnet.subnet.id }}"
+      tags: {"Name":"Assessment Instance"}
+      region: "{{ var_aws_region }}"
+      state: present
+      access_key: "{{ var_aws_access_key }}"
+      secret_key: "{{ var_aws_secret_key }}"
+      network:
+        assign_public_ip: yes
+      security_group: "TeradataAssessmentsg1"
+    register: ec2Instance
+
+  - name: Save public IP address
+    copy:
+      content: "{{ 'all:\n  hosts:\n    ' + ec2Instance.instances.0.public_ip_address + ':\n      ansible_private_key_file: ./.key.pem\n      ansible_become: true\n      ansible_user: ubuntu\n      ansible_connection: ssh' }}"
+      dest: "./.ansibleinventory.yml"
+      mode: 0400
+
+  - name: Save instance info
+    copy:
+      content: "{{ '---\n  teradata_instance_id: ' + ec2Instance.instances.0.instance_id }}"
+      dest: "./.instancevar.yml"
+
+  - name: Wait instance to boot
+    wait_for:
+      host: "{{ item.public_ip_address }}"
+      port: 22
+      state: started
+    with_items: "{{ ec2Instance.instances }}"
+    #- name: "Refresh Inventory"
+    #  meta: refresh_inventory

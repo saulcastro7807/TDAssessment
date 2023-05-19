@@ -1,0 +1,8 @@
+---
+  var_aws_access_key: "TestAccessKey"
+  var_aws_secret_key: "TestSecretKey"
+  var_aws_region: "us-east-1"
+  var_vpc_id: "vpc-123456"
+  var_subnet_cidr: "172.31.100.0/24"
+  var_ec2_ami: "ami-007855ac798b5175e"
+  var_ec2_size: "t2.micro"

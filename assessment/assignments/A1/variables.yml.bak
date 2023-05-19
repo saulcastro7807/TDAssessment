@@ -1,0 +1,4 @@
+---
+  access_key: "%%access_key_value%%"
+  secret_key: "%%secret_key_value%%"
+  aws_region: "%%aws_region_value%%"

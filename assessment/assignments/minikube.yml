@@ -1,0 +1,6 @@
+---
+- name: Teradata Assessment Assignment, prereequisite check
+  hosts: localhost
+
+  roles:
+    - role: gantsign.minikube

@@ -1,0 +1,26 @@
+---
+- name: Teradata Assessment Assignment 2
+  hosts: all
+
+  tasks:
+
+  - name: include variables
+    include_vars:
+      file: variables.yml
+
+  - name: Install HTTPD
+    apt:
+      name: apache2
+      state: present
+
+        #- name: Create displayed document
+        #copy:
+        #dest: "/var/www/html/index.hrml"
+        #mode: 0644
+        #content: |
+        #<HEAD></HEAD>
+  - name: Start HTTPD service
+    service:
+      name: apache2
+      state: started
+      enabled: true
