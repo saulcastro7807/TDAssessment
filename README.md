@@ -3,6 +3,7 @@ To run Teradata Assessment exercise:
   * Uncompress .tar.gz file (or download a repository copy)
   * cd assessment/assignments
   * ./runme.sh
+  
 The script will execute all 3 assignments automatically
 
 # Considerations
